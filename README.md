@@ -72,6 +72,13 @@ https://lucasesrom.github.io/Painel-de-Zoonoses-e-Controle-Animal/
 
 Para atualizar, execute `python exportar_dashboard.py` no computador que possui
 o banco tratado e envie somente `dados/dashboard.json` à branch `main`.
+No Windows, o arquivo **Atualizar Site.bat** faz a exportação e o envio com dois
+cliques. É necessário ter Git instalado e acesso de escrita ao repositório;
+o Git pode solicitar login na primeira utilização. O botão envia os dados, e o
+GitHub Actions publica em seguida. Confira o resultado na aba Actions.
+
+Antes de clicar, coloque a versão mais recente de `banco_zoonoses.db` na pasta.
+Esse botão não executa o tratamento e não baixa o banco do Drive do seu amigo.
 GitHub não acompanha automaticamente as alterações feitas no Google Drive: o JSON
 atualizado precisa chegar ao repositório para este fluxo funcionar.
 
