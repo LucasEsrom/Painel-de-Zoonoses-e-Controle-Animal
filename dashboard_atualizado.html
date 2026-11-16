@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Zoonoses e Controle Animal</title>
+<style>
+:root{
+  --bg:#eaf3ec;--card:#ffffff;--ink:#12301f;--muted:#5b7263;--line:#dbe8de;--soft:#f3f9f4;
+  --g1:#1b7437;--g2:#2f9e55;--g3:#bfe3c9;--amber:#e8b02f;--teal:#2a9d8f;--blue:#5fa3d6;--red:#d4574e;--violet:#8e7cc3;
+  --shadow:0 1px 2px rgba(18,48,31,.06),0 8px 24px -12px rgba(18,48,31,.18);
+  --radius:18px;
+}
+:root[data-theme=dark]{
+  --bg:#0c1510;--card:#15221a;--ink:#e7f2ea;--muted:#8fa797;--line:#243629;--soft:#1a2b20;
+  --g1:#3cb868;--g2:#4fcf7d;--g3:#2b5a3b;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.4;min-height:100vh}
+button,select,input{font:inherit;color:inherit}
+.app{display:block;min-height:100vh}
+/* top menu */
+.rail{background:linear-gradient(90deg,#0f4a22,#1b7437 60%,#2f9e55);display:flex;align-items:center;gap:6px;padding:10px 28px;position:sticky;top:0;z-index:20;box-shadow:0 4px 18px -8px rgba(0,0,0,.35)}
+.rail .logo{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:grid;place-items:center;margin-right:10px}
+.rail .brand{color:#fff;font-weight:700;margin-right:18px;white-space:nowrap}
+.rail a{height:40px;padding:0 14px;border-radius:12px;display:flex;align-items:center;gap:8px;color:#d6f0de;text-decoration:none;transition:.2s;font-weight:600;white-space:nowrap}
+.rail a:hover,.rail a.on{background:#fff;color:#1b7437}
+.rail svg{width:18px;height:18px}
+.rail .sp{flex:1}
+svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+main{padding:20px 28px 40px;width:100%}
+/* header */
+.hero{position:relative;overflow:hidden;border-radius:var(--radius);background:linear-gradient(110deg,#0f4a22,#1b7437 55%,#2f9e55);color:#fff;padding:22px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:var(--shadow)}
+.hero:before,.hero:after{content:"";position:absolute;top:-40%;height:200%;width:90px;background:rgba(255,255,255,.08);transform:rotate(24deg)}
+.hero:before{left:46%}.hero:after{left:54%;width:36px;background:rgba(255,255,255,.12)}
+.hero h1{font-size:clamp(20px,2.4vw,28px);letter-spacing:.2px;font-weight:700;position:relative}
+.hero p{opacity:.85;margin-top:4px;position:relative}
+.hero .tools{display:flex;gap:8px;position:relative;z-index:1}
+.btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:8px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;transition:.2s}
+.btn:hover{background:rgba(255,255,255,.25)}
+.btn svg{width:16px;height:16px}
+/* filters */
+.filters{margin:16px 0;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;background:var(--card);padding:14px 16px;border-radius:var(--radius);box-shadow:var(--shadow)}
+.fl-group{display:flex;flex-direction:column;gap:3px;position:relative}
+.fl-group>label{font-size:12px;font-weight:600;color:var(--ink)}
+.dd-b{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:150px;background:var(--card);border:1px solid var(--muted);border-radius:4px;padding:5px 8px;cursor:pointer;font-size:12.5px;text-align:left}
+.dd-b:hover,.dd-b[aria-expanded=true]{border-color:var(--g2);box-shadow:0 0 0 3px rgba(47,158,85,.18)}
+.dd-b span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.dd-b svg{width:10px;height:10px;flex:none;fill:currentColor}
+.dd-p{position:absolute;top:100%;left:0;margin-top:3px;min-width:100%;max-height:260px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;box-shadow:0 12px 30px -8px rgba(0,0,0,.3);z-index:30;padding:4px;display:none}
+.dd-p.open{display:block}
+.dd-p label{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap}
+.dd-p label:hover{background:var(--soft)}
+.dd-p input{accent-color:var(--g1)}
+.dd-p .all{border-bottom:1px solid var(--line);border-radius:6px 6px 0 0;margin-bottom:3px}
+.clear{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--muted);font-weight:600;align-self:flex-end}
+.clear:hover{border-color:var(--g2);color:var(--g1)}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:16px}
+.kpi{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.kpi:after{content:"";position:absolute;right:-24px;top:-24px;width:84px;height:84px;border-radius:50%;background:var(--g3);opacity:.35}
+.kpi .ic{width:34px;height:34px;border-radius:50%;background:var(--g1);color:#fff;display:grid;place-items:center;z-index:1}
+.kpi .ic svg{width:17px;height:17px}
+.kpi .t{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;z-index:1}
+.kpi .v{font-size:30px;font-weight:700;color:var(--g1);line-height:1;font-variant-numeric:tabular-nums;z-index:1}
+.kpi .s{font-size:12px;color:var(--muted);z-index:1}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--line);min-width:0}
+.card h2{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card h2 small{text-transform:none;letter-spacing:0;font-weight:500;font-size:12px}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+section.sec{scroll-margin-top:76px}
+.sec-t{margin:26px 0 12px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.sec-t:before{content:"";width:6px;height:22px;border-radius:4px;background:linear-gradient(var(--g2),var(--g1))}
+/* donut */
+.donut{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center}
+.donut svg{width:170px;height:170px;flex:none}
+.donut circle.seg{transition:stroke-width .2s,opacity .2s;cursor:pointer}
+.donut circle.seg:hover{stroke-width:30}
+.donut .ct{font-size:26px;font-weight:700;fill:var(--ink);text-anchor:middle}
+.donut .cl{font-size:10px;fill:var(--muted);text-anchor:middle;text-transform:uppercase;letter-spacing:.6px}
+.legend{display:flex;flex-direction:column;gap:7px;min-width:130px;flex:1}
+.legend div{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend i{width:10px;height:10px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums;padding-left:10px}
+.legend em{font-style:normal;color:var(--muted);font-size:12px;width:42px;text-align:right}
+/* bars */
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(80px,34%) 1fr 46px;gap:10px;align-items:center;font-size:13px}
+.bar .l{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .tr{height:14px;border-radius:8px;background:var(--soft);display:flex;overflow:hidden}
+.bar .fl{height:100%;transition:width .5s cubic-bezier(.2,.7,.2,1);min-width:0}
+.bar .n{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.bar.click{cursor:pointer}
+.bar.click:hover .l{color:var(--g1);font-weight:600}
+.bar.dim{opacity:.4}
+.cols{display:flex;align-items:flex-end;gap:14px;height:210px;padding-top:8px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:6px;min-width:0}
+.col .b{width:100%;max-width:70px;border-radius:10px 10px 4px 4px;transition:height .5s}
+.col .n{font-weight:700;font-variant-numeric:tabular-nums}
+.col .l{font-size:12px;color:var(--muted);text-align:center}
+.keys{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:12px}
+.keys i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+/* charts */
+.area svg{width:100%;height:auto;display:block}
+.area text{font-size:11px;fill:var(--muted)}
+.area .gl{stroke:var(--line);stroke-width:1}
+.area .pt circle{opacity:0;transition:.15s}
+.area .pt:hover circle{opacity:1}
+.area .pt rect{fill:transparent}
+.area .pt:hover rect{fill:rgba(47,158,85,.08)}
+/* cobertura */
+.cov{display:flex;flex-direction:column;gap:12px}
+.cov .r{display:grid;grid-template-columns:130px 1fr 56px;gap:10px;align-items:center}
+.cov .tr{height:10px;background:var(--soft);border-radius:6px;overflow:hidden}
+.cov .fl{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--g2),var(--g1))}
+.cov .p{text-align:right;font-weight:700;color:var(--g1)}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:var(--g3);color:#0f4a22}
+:root[data-theme=dark] .badge{color:#d6f5e0}
+/* insights */
+.ins{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.in{background:linear-gradient(135deg,var(--soft),var(--card));border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:13px;color:var(--muted)}
+.in b{display:block;font-size:17px;color:var(--ink);margin-bottom:2px}
+/* table */
+.tbar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.tbar input{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:220px;outline:none}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:hover td{background:var(--soft)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;color:var(--muted);font-size:13px}
+.pager button{border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:6px 12px;cursor:pointer}
+.pager button:disabled{opacity:.4;cursor:default}
+.empty{color:var(--muted);padding:24px;text-align:center}
+/* tooltip */
+#tip{position:fixed;pointer-events:none;background:#0f2417;color:#fff;padding:8px 11px;border-radius:10px;font-size:12.5px;opacity:0;transition:opacity .12s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:260px}
+#tip b{display:block;margin-bottom:2px}
+footer{margin-top:28px;text-align:center;color:var(--muted);font-size:12px}
+.data-status{margin-top:14px;padding:12px 18px;border:1px solid var(--line);border-radius:18px;background:var(--card);color:var(--muted)}
+.data-error{border-color:var(--red)}
+.sec.pending>.grid{display:none}
+.section-note{padding:20px 24px;border:1px solid var(--line);border-radius:24px;background:var(--card);color:var(--muted)}
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}.c3{grid-column:span 6}.c4,.c5{grid-column:span 6}.c7,.c8{grid-column:span 12}.ins{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.rail{padding:8px 10px;overflow-x:auto}.rail .brand,.rail .logo{display:none}.rail a{padding:0 10px}.rail a span{display:none}main{padding:14px}.kpis{grid-template-columns:repeat(2,1fr)}.c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 12}.hero{flex-direction:column;align-items:flex-start}.chips{margin-left:0}.ins{grid-template-columns:1fr}.bar{grid-template-columns:90px 1fr 40px}.cov .r{grid-template-columns:90px 1fr 50px}}
+/* ===== refinamento visual: tudo mais redondo ===== */
+:root{--radius:30px}
+body{background:radial-gradient(1200px 500px at 85% -10%,rgba(47,158,85,.16),transparent 60%),radial-gradient(900px 500px at -10% 30%,rgba(95,163,214,.12),transparent 60%),var(--bg);background-attachment:fixed}
+:root[data-theme=dark] body{background:radial-gradient(1200px 500px at 85% -10%,rgba(60,184,104,.12),transparent 60%),var(--bg);background-attachment:fixed}
+.rail{margin:14px 28px 0;top:14px;border-radius:999px;padding:8px 12px 8px 10px;backdrop-filter:blur(8px)}
+.rail .logo{border-radius:50%}
+.rail a{border-radius:999px}
+main{padding-top:16px}
+body:before{content:"";position:fixed;top:0;left:0;right:0;height:14px;background:var(--bg);z-index:19;opacity:.96}
+.hero{border-radius:36px;padding:28px 36px;background:radial-gradient(500px 220px at 90% 0%,rgba(255,255,255,.22),transparent 70%),linear-gradient(110deg,#0f4a22,#1b7437 55%,#2f9e55)}
+.btn{border-radius:999px;padding:9px 16px}
+.filters{border-radius:32px;padding:18px 24px;gap:16px}
+.dd-b{border-radius:999px;padding:8px 16px;border-color:var(--line);background:var(--soft)}
+.dd-b span{max-width:140px}
+.fl-group>label{padding-left:12px;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.5px}
+.dd-p{border-radius:20px;padding:8px;margin-top:6px}
+.dd-p label{border-radius:12px}
+.dd-p .all{border-radius:12px}
+.clear{border-radius:999px;padding:9px 18px}
+.kpi{border-radius:32px;padding:20px;transition:transform .25s,box-shadow .25s}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 14px 30px -14px rgba(18,48,31,.35)}
+.kpi:after{width:110px;height:110px;right:-30px;top:-30px}
+.kpi .ic{width:42px;height:42px;box-shadow:0 6px 14px -4px rgba(27,116,55,.55)}
+.kpi .ic svg{width:20px;height:20px}
+.kpi .v{font-size:34px}
+.card{border-radius:32px;padding:22px 24px;transition:box-shadow .25s}
+.card:hover{box-shadow:0 14px 34px -16px rgba(18,48,31,.28)}
+.card h2:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--g2);margin-right:2px;flex:none}
+.card h2{justify-content:flex-start}
+.card h2 small{margin-left:auto}
+.in{border-radius:26px;padding:16px 20px}
+.sec-t:before{width:10px;height:10px;border-radius:50%}
+.bar .tr{height:12px;border-radius:999px}
+.bar .fl:first-child{border-radius:999px 0 0 999px}
+.bar .fl:last-child{border-radius:0 999px 999px 0}
+.bar .fl:only-child{border-radius:999px}
+.cov .tr{height:12px;border-radius:999px}
+.cov .fl{border-radius:999px}
+.col .b{border-radius:22px 22px 10px 10px}
+.donut circle.seg{stroke-linecap:butt}
+.badge{padding:4px 12px}
+.tbar input{border-radius:999px;padding:10px 18px}
+.tw{border-radius:20px}
+th{background:var(--soft)}th:first-child{border-radius:14px 0 0 14px}th:last-child{border-radius:0 14px 14px 0}th{border-bottom:0}
+tr:hover td:first-child{border-radius:12px 0 0 12px}tr:hover td:last-child{border-radius:0 12px 12px 0}
+.pager button{border-radius:999px;padding:7px 16px}
+.pager button:not(:disabled):hover{border-color:var(--g2);color:var(--g1)}
+#tip{border-radius:14px;padding:10px 14px}
+.area .pt:hover rect{rx:8}
+@media(max-width:800px){.rail{margin:10px;border-radius:24px}.hero{padding:22px;border-radius:28px}.card,.filters,.kpi{border-radius:26px}}
+.click{cursor:pointer}
+.dim{opacity:.3;transition:opacity .2s}
+.bar .fl[data-f],.col .b,.area .pt{cursor:pointer}
+.legend .click:hover{color:var(--g1)}
+.col.click:hover .b{filter:brightness(1.1)}
+tr.click:hover td{cursor:pointer}
+.area .pt.act circle{opacity:1}
+.area .pt.act rect{fill:rgba(47,158,85,.12)}
+.cov .r.click:hover .fl{filter:brightness(1.1)}
+@media print{.rail,.filters,.hero .tools,.pager,.tbar{display:none}.app{display:block}body{background:#fff}.card{break-inside:avoid;box-shadow:none}}
+.sec-old{font-size:12px;font-weight:600;color:var(--muted);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.rail{overflow-x:auto;scrollbar-width:none}.rail::-webkit-scrollbar{display:none}.rail .logo,.rail a{flex:none}
+@media(max-width:1320px){.rail .brand{display:none}.rail a{padding:0 10px;gap:6px}}
+@media(max-width:1080px){.rail a span{display:none}}
+</style>
+</head>
+<body>
+<div id="tip"></div>
+<div class="app">
+  <nav class="rail" aria-label="Seções">
+    <div class="logo"><svg class="i" viewBox="0 0 24 24" style="width:22px;height:22px;color:#fff"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg></div>
+    <div class="brand">Zoonoses</div>
+    <a href="#geral" class="on"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span>Visão geral</span></a>
+    <a href="#animais"><svg class="i" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Animais</span></a>
+    <a href="#vacinacao"><svg class="i" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg><span>Vacinação</span></a>
+    <a href="#imagens" aria-label="Imagens" title="Imagens"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>Imagens</span></a>
+    <a href="#canil"><svg class="i" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Canil</span></a>
+    <a href="#notificacoes"><svg class="i" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span>Notificações</span></a>
+    <a href="#diagnosticos"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span>Diagnósticos</span></a>
+    <a href="#maustratos"><svg class="i" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Maus-tratos</span></a>
+    <a href="#obitos"><svg class="i" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg><span>Óbitos</span></a>
+    <div class="sp"></div>
+    <a href="#" id="theme" title="Alternar tema"><svg class="i" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>Tema</span></a>
+  </nav>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>Painel de Zoonoses e Controle Animal</h1>
+        <p id="sub">Vacinação · Canil e esterilização · Notificações de ocorrência</p>
+      </div>
+      <div class="tools">
+        <button class="btn" id="print"><svg class="i" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir</button>
+      </div>
+    </header>
+
+    <div class="filters" id="filters"></div>
+
+    <section class="sec" id="geral">
+      <div class="kpis" id="kpis"></div>
+      <div class="ins" id="ins"></div>
+      <div class="grid">
+        <div class="card c4"><h2>Animais por espécie</h2><div class="donut" id="dEsp"></div></div>
+        <div class="card c4"><h2>Animais por município <small>cão · gato</small></h2><div class="bars" id="bMun"></div><div class="keys"><span><i style="background:var(--g2)"></i>Cão</span><span><i style="background:var(--amber)"></i>Gato</span></div></div>
+        <div class="card c4"><h2>Vacinação em dia <small>por município</small></h2><div class="cov" id="cov"></div></div>
+        <div class="card c12"><h2>Relatório resumido por município</h2><div class="tw"><table><thead><tr><th>Município</th><th class="num">Animais</th><th class="num">Vacinação em dia</th><th class="num">% em dia</th><th class="num">Doses</th><th class="num">Registros canil</th><th class="num">Castrados</th><th class="num">Notificações</th></tr></thead><tbody id="st"></tbody></table></div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="animais">
+      <div class="sec-t">Perfil dos animais</div>
+      <div class="ins" id="ianimais"></div>
+      <div class="grid">
+        <div class="card c4"><h2>Sexo</h2><div class="donut" id="dSexo"></div></div>
+        <div class="card c4"><h2>Status do cadastro</h2><div class="donut" id="dStA"></div></div>
+        <div class="card c4"><h2>Situação da vacinação</h2><div class="donut" id="dSv"></div></div>
+        <div class="card c4"><h2>Top 10 raças</h2><div class="bars" id="bRaca"></div></div>
+        <div class="card c4"><h2>Vacinas faltantes</h2><div class="bars" id="bFalt"></div></div>
+        <div class="card c4"><h2>Idade registrada</h2><div class="bars" id="bIdade"></div></div>
+        <div class="card c12"><h2>Cadastros por mês</h2><div class="area" id="aCad"></div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="vacinacao">
+      <div class="sec-t">Vacinação</div>
+      <div class="grid">
+        <div class="card c8"><h2>Doses aplicadas por mês <small id="tVac"></small></h2><div class="area" id="aVac"></div></div>
+        <div class="card c4"><h2>Doses por espécie</h2><div class="donut" id="dVacEsp"></div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="imagens">
+      <div class="sec-t">Imagens dos animais</div>
+      <div class="card empty">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:48px;height:48px;margin-bottom:12px"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <p><strong>Nenhuma imagem disponível</strong></p>
+        <p>As fotos dos animais aparecerão aqui quando estiverem disponíveis.</p>
+      </div>
+    </section>
+
+    <section class="sec pending" id="canil">
+      <div class="sec-t">Canil e esterilização</div>
+      <p class="section-note">Esta seção aguarda adaptação. O banco atual não possui os registros de adoção, castração e atendimento usados por estes gráficos.</p>
+      <div class="grid">
+        <div class="card c4"><h2>Situação dos animais</h2><div class="donut" id="dStatus"></div></div>
+        <div class="card c4"><h2>Tipo de atendimento</h2><div class="cols" id="cAt"></div></div>
+        <div class="card c4"><h2>Situação por município</h2><div class="bars" id="bStatusMun"></div><div class="keys" id="kStatus"></div></div>
+        <div class="card c12"><h2>Entradas no canil por mês</h2><div class="area" id="aCan"></div></div>
+      </div>
+    </section>
+
+    <section class="sec pending" id="notificacoes">
+      <div class="sec-t">Notificações de ocorrência</div>
+      <p class="section-note">Esta seção aguarda adaptação. O banco atual não possui uma tabela de notificações por bairro.</p>
+      <div class="grid">
+        <div class="card c4"><h2>Tipo de ocorrência</h2><div class="donut" id="dOc"></div></div>
+        <div class="card c4"><h2>Notificações por município</h2><div class="bars" id="bNotMun"></div></div>
+        <div class="card c4"><h2>Top 10 bairros</h2><div class="bars" id="bBairro"></div></div>
+        <div class="card c12"><h2>Notificações por mês</h2><div class="area" id="aNot"></div></div>
+        <div class="card c12">
+          <h2>Registros de notificação <small id="tCount"></small></h2>
+          <div class="tbar"><input id="q" type="search" placeholder="Buscar bairro, município ou tipo…"></div>
+          <div class="tw"><table><thead><tr><th>Data</th><th>Município</th><th>Bairro</th><th>Ocorrência</th></tr></thead><tbody id="tb"></tbody></table></div>
+          <div class="pager"><span id="pinfo"></span><button id="prev">‹ Anterior</button><button id="next">Próxima ›</button></div>
+        </div>
+      </div>
+    </section>
+    <section class="sec" id="diagnosticos">
+      <div class="sec-t">Diagnósticos</div>
+      <div class="ins" id="idiagnosticos"></div>
+      <div class="grid">
+        <div class="card c4"><h2>Doenças</h2><div class="bars" id="bDoe"></div></div>
+        <div class="card c4"><h2>Situação do diagnóstico</h2><div class="donut" id="dTrat"></div></div>
+        <div class="card c4"><h2>Evolução</h2><div class="donut" id="dEvo"></div></div>
+        <div class="card c4"><h2>Diagnósticos por município</h2><div class="bars" id="bDiagMun"></div></div>
+        <div class="card c8"><h2>Diagnósticos por mês</h2><div class="area" id="aDiag"></div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="maustratos">
+      <div class="sec-t">Maus-tratos</div>
+      <div class="ins" id="imaustratos"></div>
+      <div class="grid">
+        <div class="card c4"><h2>Tipo de maus-tratos</h2><div class="bars" id="bMt"></div></div>
+        <div class="card c4"><h2>Gravidade</h2><div class="donut" id="dGrav"></div></div>
+        <div class="card c4"><h2>Situação da ocorrência</h2><div class="bars" id="bProv"></div></div>
+        <div class="card c4"><h2>Ocorrências por município</h2><div class="bars" id="bMtMun"></div></div>
+        <div class="card c8"><h2>Ocorrências por mês</h2><div class="area" id="aMt"></div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="obitos">
+      <div class="sec-t">Óbitos e eutanásias</div>
+      <div class="ins" id="iobitos"></div>
+      <div class="grid">
+        <div class="card c4"><h2>Tipo</h2><div class="donut" id="dObt"></div></div>
+        <div class="card c4"><h2>Motivo</h2><div class="bars" id="bMot"></div></div>
+        <div class="card c4"><h2>Registros por município</h2><div class="bars" id="bObMun"></div></div>
+        <div class="card c12"><h2>Registros por mês</h2><div class="area" id="aOb"></div></div>
+      </div>
+    </section>
+
+    <footer>Painel de Zoonoses e Controle Animal · <span id="fonte">Sem dados cadastrados</span></footer>
+  </main>
+</div>
+
+<script>
+(async ()=>{
+"use strict";
+const DATA={cad:[],vac:[],canil:[],notif:[],diag:[],maus:[],obit:[]};
+let META=null;
+const status=document.createElement('p');
+status.className='data-status';status.setAttribute('role','status');
+status.textContent='Carregando dados…';
+document.querySelector('.hero').after(status);
+try{
+  const response=await fetch('./dados/dashboard.json',{cache:'no-store'});
+  if(!response.ok)throw new Error('HTTP '+response.status);
+  const payload=await response.json();
+  if(payload.schema_version!==1||!payload.meta||!Object.keys(DATA).every(k=>Array.isArray(payload.data?.[k])))throw new Error('Formato de dados inválido');
+  Object.assign(DATA,payload.data);META=payload.meta;
+  const semData=Object.values(META.sem_data||{}).reduce((a,b)=>a+b,0);
+  status.textContent='Dados atualizados em '+new Date(META.gerado_em).toLocaleString('pt-BR')+'. '+
+    'Canil e notificações aguardam adaptação ao novo banco.'+
+    (semData?' '+semData.toLocaleString('pt-BR')+' registros sem data válida entram nos totais gerais, mas ficam fora dos gráficos mensais e dos filtros de período.':'');
+  document.querySelector('#fonte').textContent='Dados sintéticos para fins acadêmicos · '+META.fonte;
+}catch(error){
+  status.classList.add('data-error');
+  status.setAttribute('role','alert');
+  status.textContent=location.protocol==='file:'?
+    'Para carregar os dados, abra este painel pelo servidor local: python -m http.server 8000. Depois acesse http://localhost:8000/dashboard_atualizado.html.':
+    'Não foi possível carregar os dados. Gere dados/dashboard.json com o exportador Python e recarregue a página.';
+  console.error('Falha ao carregar os dados do painel:',error);
+  document.querySelector('#fonte').textContent='Dados indisponíveis';
+}
+const {cad,vac,canil,notif,diag,maus,obit}=DATA;
+const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const PAL=['#1b7437','#e8b02f','#2a9d8f','#5fa3d6','#d4574e','#8e7cc3','#98a69d'];
+const STC={'Adotado':'#2f9e55','Castrado':'#2a9d8f','Em Tratamento':'#e8b02f','Óbito':'#d4574e'};
+const ESC={'Cão':'#2f9e55','Gato':'#e8b02f'};
+const $=s=>document.querySelector(s);
+const fmt=n=>Math.round(n).toLocaleString('pt-BR');
+const pct=(a,b)=>b?(a/b*100):0;
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dBR=d=>d?d.split('-').reverse().join('/'):'—';
+const mLabel=k=>MES[+k.slice(5,7)-1]+'/'+k.slice(2,4);
+const tipEl=$('#tip');
+const tip=(l,v)=>`${esc(l)}|${esc(v)}`;
+
+const S={mun:new Set(),esp:new Set(),ano:new Set(),mes:new Set(),tipo:new Set(),sit:new Set(),aten:new Set(),bairro:new Set(),raca:new Set(),sexo:new Set(),doenca:new Set(),mt:new Set(),grav:new Set(),obt:new Set(),page:0,q:''};
+const has=(k,v)=>!S[k].size||S[k].has(v);
+
+// ---------- helpers de gráfico ----------
+function group(arr,kf,vf=()=>1){const m=new Map();arr.forEach(r=>{const k=kf(r);m.set(k,(m.get(k)||0)+vf(r))});return m}
+function donut(el,items,label){
+  const tot=sum(items,i=>i.value),R=68,C=2*Math.PI*R;let off=0;
+  const segs=items.filter(i=>i.value>0).map(i=>{const len=i.value/tot*C,gap=items.length>1?2.5:0;
+    const s=`<circle class="seg" cx="100" cy="100" r="${R}" fill="none" stroke="${i.color}" stroke-width="26" stroke-dasharray="${Math.max(len-gap,0.1)} ${C-len+gap}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"${i.f?` data-f="${i.f}" data-v="${esc(i.label)}"`:''} data-tip="${tip(i.label,fmt(i.value)+' ('+pct(i.value,tot).toFixed(1).replace('.',',')+'%)')}"/>`;off+=len;return s}).join('');
+  el.innerHTML=`<svg viewBox="0 0 200 200" role="img" aria-label="${esc(label)}"><circle cx="100" cy="100" r="${R}" fill="none" stroke="var(--soft)" stroke-width="26"/>${segs}<text class="ct" x="100" y="104">${fmt(tot)}</text><text class="cl" x="100" y="124">${esc(label)}</text></svg>
+  <div class="legend">${items.map(i=>`<div class="${i.f?'click':''}"${i.f?` data-f="${i.f}" data-v="${esc(i.label)}"`:''}><i style="background:${i.color}"></i>${esc(i.label)}<b>${fmt(i.value)}</b><em>${pct(i.value,tot).toFixed(0)}%</em></div>`).join('')}</div>`;
+}
+function bars(el,items,o={}){
+  const max=Math.max(1,...items.map(i=>i.total??i.value));
+  el.innerHTML=items.length?items.map(i=>{
+    const tot=i.total??i.value;
+    const inner=i.parts?i.parts.map(p=>`<div class="fl" style="width:${pct(p.value,max)}%;background:${p.color}" data-tip="${tip(i.label+' · '+p.label,fmt(p.value))}"${p.f?` data-f="${p.f}" data-v="${esc(p.label)}"`:''}></div>`).join(''):`<div class="fl" style="width:${pct(i.value,max)}%;background:${i.color||'var(--g2)'}" data-tip="${tip(i.label,fmt(i.value))}"></div>`;
+    return `<div class="bar${o.f?' click':''}" ${o.f?`data-f="${o.f}" data-v="${esc(i.label)}"`:''}><div class="l" title="${esc(i.label)}">${esc(i.label)}</div><div class="tr">${inner}</div><div class="n">${fmt(tot)}</div></div>`}).join(''):'<div class="empty">Sem dados para o filtro atual</div>';
+}
+function area(el,pts,color){
+  if(!pts.length){el.innerHTML='<div class="empty">Sem dados para o filtro atual</div>';return}
+  const W=Math.max(el.clientWidth,320),H=210,L=38,R=12,T=14,B=26,iw=W-L-R,ih=H-T-B;
+  const mx=Math.max(1,...pts.map(p=>p.v)),step=Math.pow(10,Math.floor(Math.log10(mx))),nice=Math.ceil(mx/step)*step;
+  const ticks=[0,.25,.5,.75,1].map(t=>Math.round(nice*t));
+  const x=i=>L+(pts.length===1?iw/2:i*iw/(pts.length-1)),y=v=>T+ih-v/nice*ih;
+  const line=pts.map((p,i)=>{const X=x(i).toFixed(1),Y=y(p.v).toFixed(1);if(!i)return `M${X} ${Y}`;const px=x(i-1),py=y(pts[i-1].v),mx=((px+x(i))/2).toFixed(1);return `C${mx} ${py.toFixed(1)} ${mx} ${Y} ${X} ${Y}`}).join('');
+  const id='g'+Math.random().toString(36).slice(2,7),bw=iw/Math.max(pts.length-1,1);
+  const every=Math.ceil(pts.length/Math.floor(iw/52));
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".35"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+  ${ticks.map(t=>`<line class="gl" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-8}" y="${y(t)+4}" text-anchor="end">${t}</text>`).join('')}
+  <path d="${line}L${x(pts.length-1)} ${y(0)}L${x(0)} ${y(0)}Z" fill="url(#${id})"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>
+  ${pts.map((p,i)=>`<g class="pt" data-f="ym" data-v="${p.k}"><rect x="${x(i)-bw/2}" y="${T}" width="${bw}" height="${ih}" data-tip="${tip(p.label,fmt(p.v))}"/><circle cx="${x(i)}" cy="${y(p.v)}" r="5" fill="${color}" stroke="var(--card)" stroke-width="2" pointer-events="none"/></g>${i%every===0?`<text x="${x(i)}" y="${H-6}" text-anchor="${i===pts.length-1&&pts.length>1?'end':'middle'}">${p.label}</text>`:''}`).join('')}</svg>`;
+}
+function monthly(rows,vf=()=>1){
+  const m=group(rows.filter(r=>r.d),r=>r.d.slice(0,7),vf);
+  return [...m.keys()].sort().map(k=>({k,label:mLabel(k),v:m.get(k)}));
+}
+
+// ---------- filtros ----------
+const inP=r=>has('ano',r.d.slice(0,4))&&has('mes',r.d.slice(5,7));
+const inM=r=>has('mun',r.m);
+const inE=r=>has('esp',r.e);
+const inC=r=>inM(r)&&inE(r)&&has('raca',r.r)&&has('sexo',r.x);
+const inA=r=>{const a=ANIM.get(r.ia);return has('esp',a?.e)&&has('raca',a?.r)&&has('sexo',a?.x)};
+const MNAMES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+let allDates,MIN,MAX,MUNS,TIPOS,FDEF,ANIM;
+const opts=(a,f)=>[...new Set(a.map(f))].sort((x,y)=>x.localeCompare(y,'pt-BR')).map(v=>[v,v]);
+function derive(){
+allDates=[...cad,...vac,...canil,...notif,...diag,...maus,...obit].map(r=>r.d).filter(Boolean).sort();
+ANIM=new Map(cad.map(r=>[r.ia,r]));
+MIN=allDates[0];MAX=allDates[allDates.length-1];
+MUNS=[...new Set([...cad,...vac,...canil,...notif,...diag,...maus,...obit].map(a=>a.m))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+TIPOS=[...new Set(notif.map(r=>r.t))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+FDEF=[
+ {k:'ano',l:'Ano',o:[...new Set(allDates.map(d=>d.slice(0,4)))].map(v=>[v,v])},
+ {k:'mes',l:'Mês',o:MNAMES.map((n,i)=>[String(i+1).padStart(2,'0'),n])},
+ {k:'mun',l:'Município',o:MUNS.map(v=>[v,v])},
+ {k:'esp',l:'Espécie',o:[['Cão','Cão'],['Gato','Gato']]},
+ {k:'raca',l:'Raça',o:opts(cad,r=>r.r)},
+ {k:'sexo',l:'Sexo',o:opts(cad,r=>r.x)},
+ {k:'doenca',l:'Doença',o:opts(diag,r=>r.do)},
+ {k:'mt',l:'Maus-tratos',o:opts(maus,r=>r.tm)},
+ {k:'obt',l:'Óbito/Eutanásia',o:opts(obit,r=>r.ot)}];
+}
+derive();
+function ddText(d){const s=S[d.k];if(!s.size)return '(Tudo)';if(s.size===1)return d.o.find(o=>o[0]===[...s][0])[1];return s.size+' selecionados'}
+function buildFilters(){
+  $('#filters').innerHTML=FDEF.map(d=>`<div class="fl-group" data-k="${d.k}"><label>${d.l}</label><button type="button" class="dd-b" aria-expanded="false"><span>(Tudo)</span><svg viewBox="0 0 10 10"><path d="M1 3l4 4 4-4z"/></svg></button>
+   <div class="dd-p"><label class="all"><input type="checkbox" data-all checked> (Tudo)</label>${d.o.map(o=>`<label><input type="checkbox" value="${esc(o[0])}"> ${esc(o[1])}</label>`).join('')}</div></div>`).join('')+
+   '<button type="button" class="clear" id="clr">Limpar filtros</button><div class="hint">Seleção múltipla. Espécie, Raça e Sexo filtram animais, vacinações e eventos vinculados. Doença, Maus-tratos e Óbito/Eutanásia filtram a própria seção. Clique nos gráficos para filtrar (Ctrl/Shift soma seleções; clique de novo para desfazer).</div>';
+}
+function syncFilters(){
+  FDEF.forEach(d=>{const g=document.querySelector(`.fl-group[data-k="${d.k}"]`);g.querySelector('.dd-b span').textContent=ddText(d);
+    g.querySelectorAll('input[value]').forEach(i=>i.checked=S[d.k].has(i.value));g.querySelector('[data-all]').checked=!S[d.k].size});
+}
+function closeDD(){document.querySelectorAll('.dd-p.open').forEach(p=>{p.classList.remove('open');p.previousElementSibling.setAttribute('aria-expanded','false')})}
+// ---------- render ----------
+const ICON={
+ heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+ drop:'<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+ home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+ cut:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>',
+ bell:'<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'};
+function kpi(ic,t,v,s){return `<div class="kpi"><div class="ic"><svg class="i" viewBox="0 0 24 24">${ICON[ic]}</svg></div><div class="t">${t}</div><div class="v">${v}</div><div class="s">${s}</div></div>`}
+
+// grafia unificada só na exibição; a planilha traz estas variações
+const VACN={'Antiarrábica':'Antirrábica','Lapstopirose':'Leptospirose','Leucemia Felima(FeLV)':'Leucemia Felina (FeLV)'};
+function render(){
+  const fcad=cad.filter(r=>inC(r)&&inP(r)), fa=fcad.map(r=>({m:r.m,e:r.e,q:1,v:r.sv==='Completa'?1:0})), fcov=fa;
+  const fv=vac.filter(r=>inM(r)&&inA(r)&&inP(r)), fc=canil.filter(r=>inM(r)&&inP(r)&&has('sit',r.s)&&has('aten',r.a)), fn=notif.filter(r=>inM(r)&&inP(r)&&has('tipo',r.t)&&has('bairro',r.b));
+  const mvAll=vac.filter(r=>inM(r)&&inA(r)),mcAll=canil.filter(r=>inM(r)&&has('sit',r.s)&&has('aten',r.a)),mnAll=notif.filter(r=>inM(r)&&has('tipo',r.t)&&has('bairro',r.b));
+  const totA=sum(fa,a=>a.q), totV=sum(fcov,a=>a.v), doses=sum(fv,r=>r.n);
+  const castr=fc.filter(r=>r.s==='Castrado').length, adot=fc.filter(r=>r.s==='Adotado').length;
+  const lab=(k,all)=>S[k].size?FDEF.find(d=>d.k===k).o.filter(o=>S[k].has(o[0])).map(o=>o[1]).join(', '):all;
+  $('#sub').textContent=`${lab('mun','Todos os municípios')} · ${lab('esp','Cães e gatos')} · ${S.ano.size||S.mes.size?[lab('mes',''),lab('ano','')].filter(Boolean).join(' de '):(MIN&&MAX?dBR(MIN)+' a '+dBR(MAX):'Sem dados cadastrados')}`;
+
+  $('#kpis').innerHTML=
+    kpi('heart','Animais cadastrados',fmt(totA),`${fmt(sum(fa.filter(a=>a.e==='Cão'),a=>a.q))} cães · ${fmt(sum(fa.filter(a=>a.e==='Gato'),a=>a.q))} gatos`)+
+    kpi('drop','Doses aplicadas',fmt(doses),`${fmt(fv.length)} aplicações · média ${(doses/(fv.length||1)).toFixed(1).replace('.',',')}`)+
+    kpi('shield','Vacinação em dia',pct(totV,totA).toFixed(1).replace('.',',')+'%',`${fmt(totV)} de ${fmt(totA)} com situação em dia`)+
+    kpi('home','Registros no canil','—','Seção aguardando adaptação')+
+    kpi('cut','Castrados','—','Informação ausente no banco')+
+    kpi('bell','Notificações','—','Seção aguardando adaptação');
+
+  // destaques
+  const nm=[...group(fn,r=>r.m).entries()].sort((a,b)=>b[1]-a[1]), nt=[...group(fn,r=>r.t).entries()].sort((a,b)=>b[1]-a[1]);
+  const nb=[...group(fn,r=>r.b).entries()].sort((a,b)=>b[1]-a[1]);
+  const ob=fc.filter(r=>r.s==='Óbito').length;
+  $('#ins').innerHTML=
+   `<div class="in"><b>${nm[0]?esc(nm[0][0]):'—'}</b>${nm[0]?pct(nm[0][1],fn.length).toFixed(0)+'% das notificações':'sem notificações'}</div>`+
+   `<div class="in"><b>${nt[0]?esc(nt[0][0]):'—'}</b>tipo de ocorrência mais frequente${nt[0]?' ('+fmt(nt[0][1])+')':''}</div>`+
+   `<div class="in"><b>${nb[0]?esc(nb[0][0]):'—'}</b>bairro com mais notificações${nb[0]?' ('+fmt(nb[0][1])+')':''}</div>`+
+   `<div class="in"><b>${pct(ob,fc.length).toFixed(1).replace('.',',')}%</b>de óbitos entre os registros do canil (${fmt(ob)})</div>`;
+
+  // animais
+  donut($('#dEsp'),['Cão','Gato'].map(e=>({label:e,value:sum(fa.filter(a=>a.e===e),a=>a.q),color:ESC[e],f:'esp'})),'animais');
+  const byMun=MUNS.filter(m=>has('mun',m)).map(m=>{const c=sum(fa.filter(a=>a.m===m&&a.e==='Cão'),a=>a.q),g=sum(fa.filter(a=>a.m===m&&a.e==='Gato'),a=>a.q);return{label:m,total:c+g,parts:[{label:'Cão',value:c,color:ESC['Cão'],f:'esp'},{label:'Gato',value:g,color:ESC['Gato'],f:'esp'}]}}).sort((a,b)=>b.total-a.total);
+  bars($('#bMun'),byMun,{f:'mun'});
+  const cv=MUNS.filter(m=>has('mun',m)).map(m=>{const r=fcov.filter(a=>a.m===m);return{m,q:sum(r,a=>a.q),v:sum(r,a=>a.v)}});
+  $('#cov').innerHTML=cv.map(c=>`<div class="r click" data-f="mun" data-v="${esc(c.m)}"><div>${esc(c.m)}</div><div class="tr"><div class="fl" style="width:${pct(c.v,c.q)}%"></div></div><div class="p">${pct(c.v,c.q).toFixed(0)}%</div></div>`).join('')+
+    `<div><span class="badge">${!totA?'Sem dados de vacina\u00e7\u00e3o':totV>=totA?'Vacinação completa em todos os grupos':'Vacinação incompleta'}</span></div>`;
+
+  // vacinação
+  const mv=monthly(mvAll,r=>r.n);area($('#aVac'),mv,'#2f9e55');$('#tVac').textContent=`${fmt(doses)} doses`;
+  donut($('#dVacEsp'),['Cão','Gato'].map(e=>({label:e,value:sum(fv.filter(r=>r.e===e),r=>r.n),color:ESC[e],f:'esp'})),'doses');
+
+  // canil
+  const sts=['Adotado','Castrado','Em Tratamento','Óbito'];
+  donut($('#dStatus'),sts.map(s=>({label:s,value:fc.filter(r=>r.s===s).length,color:STC[s],f:'sit'})),'animais');
+  const ats=['Clínica','Recolhimento','Castração'],atc=['#5fa3d6','#1b7437','#8e7cc3'];
+  const am=Math.max(1,...ats.map(a=>fc.filter(r=>r.a===a).length));
+  $('#cAt').innerHTML=ats.map((a,i)=>{const n=fc.filter(r=>r.a===a).length;return `<div class="col click" data-f="aten" data-v="${a}"><div class="n">${fmt(n)}</div><div class="b" style="height:${n/am*70}%;background:${atc[i]}" data-tip="${tip(a,fmt(n)+' ('+pct(n,fc.length).toFixed(0)+'%)')}"></div><div class="l">${a}</div></div>`}).join('');
+  const sm=MUNS.filter(m=>has('mun',m)).map(m=>{const r=fc.filter(x=>x.m===m);return{label:m,total:r.length,parts:sts.map(s=>({label:s,value:r.filter(x=>x.s===s).length,color:STC[s],f:'sit'}))}}).sort((a,b)=>b.total-a.total);
+  bars($('#bStatusMun'),sm,{f:'mun'});
+  $('#kStatus').innerHTML=sts.map(s=>`<span><i style="background:${STC[s]}"></i>${s}</span>`).join('');
+  area($('#aCan'),monthly(mcAll),'#2a9d8f');
+
+  // notificações
+  const tipos=[...new Set(notif.map(r=>r.t))].sort();
+  donut($('#dOc'),tipos.map((t,i)=>({label:t,value:fn.filter(r=>r.t===t).length,color:PAL[i%PAL.length],f:'tipo'})),'notificações');
+  bars($('#bNotMun'),nm.map(([l,v])=>({label:l,value:v,color:'var(--g1)'})),{f:'mun'});
+  bars($('#bBairro'),nb.slice(0,10).map(([l,v])=>({label:l,value:v,color:'var(--g2)'})),{f:'bairro'});
+  area($('#aNot'),monthly(mnAll),'#1b7437');
+
+  const rows=MUNS.filter(m=>has('mun',m)).map(m=>{const a=fa.filter(x=>x.m===m),c=fcov.filter(x=>x.m===m),cn=fc.filter(x=>x.m===m);return{m,q:sum(a,x=>x.q),v:sum(c,x=>x.v),d:sum(fv.filter(x=>x.m===m),x=>x.n),c:cn.length,k:cn.filter(x=>x.s==='Castrado').length,n:fn.filter(x=>x.m===m).length}});
+  const tt=k=>sum(rows,r=>r[k]),pc=(v,q)=>pct(v,q).toFixed(1).replace('.',',')+'%';
+  $('#st').innerHTML=rows.map(r=>`<tr class="click" data-f="mun" data-v="${esc(r.m)}"><td>${esc(r.m)}</td><td class="num">${fmt(r.q)}</td><td class="num">${fmt(r.v)}</td><td class="num">${pc(r.v,r.q)}</td><td class="num">${fmt(r.d)}</td><td class="num" title="Seção aguardando adaptação">—</td><td class="num" title="Seção aguardando adaptação">—</td><td class="num" title="Seção aguardando adaptação">—</td></tr>`).join('')+
+   `<tr class="tot"><td>Total</td><td class="num">${fmt(tt('q'))}</td><td class="num">${fmt(tt('v'))}</td><td class="num">${pc(tt('v'),tt('q'))}</td><td class="num">${fmt(tt('d'))}</td><td class="num" title="Seção aguardando adaptação">—</td><td class="num" title="Seção aguardando adaptação">—</td><td class="num" title="Seção aguardando adaptação">—</td></tr>`;
+  // seções do banco de animais
+  const cnt=(rows,f)=>[...group(rows,f).entries()].sort((a,b)=>b[1]-a[1]);
+  const slices=(es,f)=>es.map(([label,value],i)=>({label,value,color:PAL[i%PAL.length],...(f?{f}:{})}));
+  const lines=(es,color)=>es.map(([label,value])=>({label,value,color}));
+  const pf=(a,b)=>pct(a,b).toFixed(1).replace('.',',')+'%';
+  const tops=(rows,f)=>cnt(rows,f)[0]||['—',0];
+  const cards=(el,items)=>{el.innerHTML=items.map(([b,t])=>`<div class="in"><b>${esc(b)}</b>${esc(t)}</div>`).join('')};
+  const topLine=([l,n],rows,t)=>[l,`${t}${n?` (${pf(n,rows.length)})`:''}`];
+
+  // animais
+  const comp=fcad.filter(r=>r.sv==='Completa').length,idades=fcad.filter(r=>r.i!=null);
+  cards($('#ianimais'),[[fmt(fcad.length),'animais cadastrados no filtro'],[pf(comp,fcad.length),'com vacinação completa'],
+    topLine(tops(fcad,r=>r.r),fcad,'raça mais frequente'),[idades.length?(sum(idades,r=>r.i)/idades.length).toFixed(1).replace('.',','):'—',idades.length?'idade média registrada':'idade não informada no banco']]);
+  donut($('#dSexo'),slices(cnt(fcad,r=>r.x),'sexo'),'animais');
+  donut($('#dStA'),slices(cnt(fcad,r=>r.st)),'animais');
+  donut($('#dSv'),slices(cnt(fcad,r=>r.sv)),'animais');
+  bars($('#bRaca'),lines(cnt(fcad,r=>r.r).slice(0,10),'var(--g2)'),{f:'raca'});
+  bars($('#bFalt'),lines(cnt(fcad.flatMap(r=>r.vf==='Nenhuma'||r.vf==='Não informado'?[]:r.vf.split(/;\s*/).map(v=>VACN[v]||v)),v=>v),'var(--g1)'));
+  const FX=['Até 3','4 a 6','7 a 9','10 a 12','13 ou mais'],fx=i=>FX[i<=3?0:i<=6?1:i<=9?2:i<=12?3:4],gi=group(idades,r=>fx(r.i));
+  bars($('#bIdade'),idades.length?FX.map(l=>({label:l,value:gi.get(l)||0,color:'var(--g2)'})):[]);
+  area($('#aCad'),monthly(cad.filter(inC)),'#2f9e55');
+
+  // diagnósticos
+  const fd=diag.filter(r=>inM(r)&&inA(r)&&inP(r)&&has('doenca',r.do));
+  cards($('#idiagnosticos'),[[fmt(fd.length),'diagnósticos no filtro'],topLine(tops(fd,r=>r.do),fd,'doença mais frequente'),
+    [pf(fd.filter(r=>r.tr==='Em tratamento').length,fd.length),'em tratamento'],[pf(fd.filter(r=>r.tr==='Recuperado').length,fd.length),'recuperados']]);
+  bars($('#bDoe'),lines(cnt(fd,r=>r.do),'var(--g2)'),{f:'doenca'});
+  donut($('#dTrat'),slices(cnt(fd,r=>r.tr)),'diagnósticos');
+  $('#dEvo').innerHTML='<div class="empty">Evolução não informada separadamente no banco. Consulte a situação do diagnóstico.</div>';
+  bars($('#bDiagMun'),lines(cnt(fd,r=>r.m),'var(--g1)'),{f:'mun'});
+  area($('#aDiag'),monthly(diag.filter(r=>inM(r)&&inA(r)&&has('doenca',r.do))),'#2a9d8f');
+
+  // maus-tratos
+  const fm=maus.filter(r=>inM(r)&&inA(r)&&inP(r)&&has('mt',r.tm)&&has('grav',r.gr));
+  cards($('#imaustratos'),[[fmt(fm.length),'ocorrências no filtro'],topLine(tops(fm,r=>r.tm),fm,'tipo mais frequente'),
+    ['—','gravidade não informada no banco'],topLine(tops(fm,r=>r.m),fm,'município com mais ocorrências')]);
+  bars($('#bMt'),lines(cnt(fm,r=>r.tm),'#d4574e'),{f:'mt'});
+  $('#dGrav').innerHTML='<div class="empty">Gravidade não informada no banco.</div>';
+  bars($('#bProv'),lines(cnt(fm,r=>r.pv),'var(--g2)'));
+  bars($('#bMtMun'),lines(cnt(fm,r=>r.m),'var(--g1)'),{f:'mun'});
+  area($('#aMt'),monthly(maus.filter(r=>inM(r)&&inA(r)&&has('mt',r.tm)&&has('grav',r.gr))),'#d4574e');
+
+  // óbitos e eutanásias
+  const fo=obit.filter(r=>inM(r)&&inA(r)&&inP(r)&&has('obt',r.ot));
+  cards($('#iobitos'),[[fmt(fo.length),'registros no filtro'],[fmt(fo.filter(r=>r.ot==='Eutanásia').length),'eutanásias'],
+    topLine(tops(fo,r=>r.mo),fo,'motivo mais frequente'),topLine(tops(fo,r=>r.m),fo,'município com mais registros')]);
+  donut($('#dObt'),slices(cnt(fo,r=>r.ot),'obt'),'registros');
+  bars($('#bMot'),lines(cnt(fo,r=>r.mo),'var(--g2)'));
+  bars($('#bObMun'),lines(cnt(fo,r=>r.m),'var(--g1)'),{f:'mun'});
+  area($('#aOb'),monthly(obit.filter(r=>inM(r)&&inA(r)&&has('obt',r.ot))),'#8e7cc3');
+
+  cards($('#ins'),[
+    [fmt(fd.length),'diagnósticos no filtro'],
+    [fmt(fm.length),'ocorrências de maus-tratos no filtro'],
+    [fmt(fo.length),'óbitos e eutanásias no filtro'],
+    topLine(tops(fcad,r=>r.m),fcad,'município com mais animais')
+  ]);
+
+  syncFilters();
+  table(fn);
+  applyDim();
+}
+function table(fn){
+  const q=S.q.trim().toLowerCase();
+  const rows=fn.filter(r=>!q||(r.b+' '+r.m+' '+r.t).toLowerCase().includes(q)).sort((a,b)=>b.d.localeCompare(a.d)||b.id-a.id);
+  const PS=8,pages=Math.max(1,Math.ceil(rows.length/PS));S.page=Math.min(S.page,pages-1);
+  const tipos=[...new Set(notif.map(r=>r.t))].sort();
+  $('#tb').innerHTML=rows.slice(S.page*PS,S.page*PS+PS).map(r=>`<tr><td>${dBR(r.d)}</td><td>${esc(r.m)}</td><td>${esc(r.b)}</td><td><span class="badge" style="background:${PAL[tipos.indexOf(r.t)%PAL.length]}22;color:var(--ink);border:1px solid ${PAL[tipos.indexOf(r.t)%PAL.length]}">${esc(r.t)}</span></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Nenhum registro encontrado</td></tr>';
+  $('#tCount').textContent=`${fmt(rows.length)} registros`;
+  $('#pinfo').textContent=`Página ${S.page+1} de ${pages}`;
+  $('#prev').disabled=S.page===0;$('#next').disabled=S.page>=pages-1;
+}
+
+// ---------- eventos ----------
+buildFilters();
+$('#filters').addEventListener('click',e=>{
+  const g=e.target.closest('.fl-group');
+  if(e.target.closest('#clr')){FDEF.forEach(d=>S[d.k].clear());S.page=0;render();return}
+  if(!g)return;
+  const b=e.target.closest('.dd-b');
+  if(b){const p=b.nextElementSibling,o=p.classList.contains('open');closeDD();if(!o){p.classList.add('open');b.setAttribute('aria-expanded','true')}return}
+});
+$('#filters').addEventListener('change',e=>{
+  const g=e.target.closest('.fl-group');if(!g)return;const s=S[g.dataset.k];
+  if(e.target.hasAttribute('data-all'))s.clear();else if(e.target.checked)s.add(e.target.value);else s.delete(e.target.value);
+  S.page=0;render();
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.fl-group'))closeDD()});
+$('#q').oninput=e=>{S.q=e.target.value;S.page=0;render()};
+$('#prev').onclick=()=>{S.page--;render()};$('#next').onclick=()=>{S.page++;render()};
+$('#print').onclick=()=>print();
+function pick(k,v,multi){const s=S[k];if(multi){s.has(v)?s.delete(v):s.add(v)}else if(s.size===1&&s.has(v))s.clear();else{s.clear();s.add(v)}}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-f]');if(!b)return;
+  const k=b.dataset.f,v=b.dataset.v,multi=e.ctrlKey||e.metaKey||e.shiftKey;
+  if(k==='ym'){const [y,m]=v.split('-'),same=S.ano.size===1&&S.ano.has(y)&&S.mes.size===1&&S.mes.has(m);
+    if(multi){S.ano.add(y);S.mes.add(m)}else if(same){S.ano.clear();S.mes.clear()}else{S.ano=new Set([y]);S.mes=new Set([m])}}
+  else pick(k,v,multi);
+  S.page=0;render();
+});
+function applyDim(){
+  document.querySelectorAll('[data-f]').forEach(el=>{
+    const k=el.dataset.f,v=el.dataset.v;let on,hit;
+    if(k==='ym'){const [y,m]=v.split('-');on=S.ano.size||S.mes.size;hit=has('ano',y)&&has('mes',m);el.classList.toggle('act',!!on&&hit);return}
+    on=S[k].size;hit=S[k].has(v);el.classList.toggle('dim',!!on&&!hit);
+  });
+}
+document.addEventListener('mousemove',e=>{
+  const t=e.target.closest&&e.target.closest('[data-tip]');
+  if(!t){tipEl.style.opacity=0;return}
+  const [a,b]=t.dataset.tip.split('|');tipEl.innerHTML=`<b>${esc(a)}</b>${esc(b??'')}`;tipEl.style.opacity=1;
+  tipEl.style.left=Math.min(e.clientX+14,innerWidth-tipEl.offsetWidth-8)+'px';tipEl.style.top=(e.clientY+16)+'px';
+});
+// tema
+const root=document.documentElement;
+function theme(t){root.dataset.theme=t;try{localStorage.setItem('painel-tema',t)}catch(_){}}
+try{const t=localStorage.getItem('painel-tema');if(t)root.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)root.dataset.theme='dark'}catch(_){}
+$('#theme').onclick=e=>{e.preventDefault();theme(root.dataset.theme==='dark'?'light':'dark')};
+// navegação lateral
+const links=[...document.querySelectorAll('.rail a[href^="#"]:not(#theme)')];
+links.forEach(a=>a.onclick=e=>{e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'})});
+const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id))}),{rootMargin:'-30% 0px -60% 0px'});
+document.querySelectorAll('section.sec').forEach(s=>io.observe(s));
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(render,150)});
+render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.qa/
+dist/
+.publicacao/
+backup_*.db
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
